@@ -1,18 +1,26 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import express from 'express';
 
-const prisma = new PrismaClient();
+const express =require('express');
+const cors=require('cors');
+const { PrismaClient } =require('@prisma/client');
+const prisma = new PrismaClient()
+
 const app = express();
 
 app.use(express.json());
+app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/showbooks', async (req: Request, res: Response) => {
+app.get('/',(req,res)=>{
+  res.status(200).send('server is runnning');
+}
+)
+
+app.get('/showbooks', async (req, res) => {
   const allBooks = await prisma.book.findMany();
   res.json(allBooks);
 });
 
-app.post(`/addbooks`, async (req: Request, res: Response) => {
+app.post(`/addbooks`, async (req, res) => {
   const { title,author } = req.body;
   const result = await prisma.book.create({
     data: {
@@ -23,17 +31,19 @@ app.post(`/addbooks`, async (req: Request, res: Response) => {
   res.json(result);
 });
 
-app.delete(`/showbooks/:id`, async (req: Request, res: Response) => {
+app.delete(`/deletebook/:id`, async (req, res) => {
   const { id } = req.params;
-  const book = await prisma.book.delete({
-    where: {
-      id: String(id),
-    },
-  });
+  const book = await prisma.book.delete(
+    {
+      where: {
+        id: String(id), 
+      },
+    }
+  );
   res.json(book);
 });
 
-app.put('/showbooks/:id', async (req: Request, res: Response) => {
+app.put('/updatebook/:id', async (req, res) => {
   const { title, author } = req.body;
   const { id } = req.params;
 
@@ -55,6 +65,5 @@ app.put('/showbooks/:id', async (req: Request, res: Response) => {
 app.listen(3000, () => {
   console.log('listening on port 3000');
 });
-
 
 
